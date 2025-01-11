@@ -11,7 +11,7 @@ System Manager (Sys):
     - Runs stable FPS  
     - Handles a well organised error definitions  
 
-Texture Manager (TM): <br>
+Texture Manager (TM):  
     - Has special functions for loading textures in a safe manner  
     - Keeps track of all loaded textures  
     - Has special function for rendering textures and dinamicly calculating there dimensions  

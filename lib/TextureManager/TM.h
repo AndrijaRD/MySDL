@@ -66,6 +66,8 @@ class TM{
 
     static int renderTexture(const TextureData& td, SDL_Rect& dr);
 
+    static int copy(const TextureData& src, TextureData& dst);
+
     static int createTextTexture(
         TextureData& td, 
         const string& text,

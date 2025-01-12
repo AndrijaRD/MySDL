@@ -18,6 +18,7 @@ string color2hex(const SDL_Color& color);
 
 class GUI{
 private:
+
     struct LoadedText {
         int frame;
         TextureData td;
@@ -34,11 +35,7 @@ private:
             color(color),
             title(title) {}
         
-
-        string getId(){
-            return title + color2hex(this->color);
-        }
-
+        string getId(){ return title + color2hex(this->color); }
 
         // Comparator: sort by value
         bool operator<(const LoadedText& other) const { return frame < other.frame; }
@@ -47,7 +44,26 @@ private:
 
     static inline unordered_map<string, LoadedText> loadedTexts;
     static LoadedText* loadNewText(const string& title, const SDL_Color& color);
-    //static LoadedText* getLoadedText(const string& title);
+    static void removeOldest();
+
+
+    struct InputState {
+        string id; // Holds the uniqueId
+        string value; // Holds the input value
+        bool focused; // Checks if the keyboard is focused on this field
+        int removed = 0; // Holds how many characters needs to be removed in order for text to be within the bounds
+        bool deleting = false; // Checks if the backspace has been down 
+        TextureData td = TextureData(); // The text texture
+        bool change = true; // Keeps track of if the value has been changed and texture needs to be reCompiled
+
+        InputState(
+            const string& id, 
+            const string& value = "",
+            const bool& focused = false
+        ): id(id), value(value), focused(focused) {}
+    };
+
+    static inline unordered_map<string, InputState> inputStates;
 
 public:
     static int Button(
@@ -75,6 +91,16 @@ public:
         const SDL_Color& color,
         const int thickness = -1
     );
+
+    static string Input(
+        const string& uniqeId, 
+        const SDL_Rect& dRect,
+        const string& placeholder = "Type something...",
+        const SDL_Color& background = SDL_COLOR_WHITE,
+        const SDL_Color& foreground = SDL_COLOR_BLACK
+    );
+
+    static void DestroyInput(const string& uniqueId);
     
 };
 

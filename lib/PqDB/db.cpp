@@ -1,5 +1,7 @@
 #include "db.h"
 
+
+
 int DB::init(
     const string& db_name,
     const string& username,
@@ -108,7 +110,6 @@ int DB::execPrepared(Statement& s, const char* params, DBResult& result){
     );
 
     if(!checkResult(result.result, s.type)) {
-        cout << "[DB] Error: " << PQresultErrorMessage(result.result) << endl;
         PQclear(result.result);
         result.result = nullptr;
         return DB_EXEC_RESULT_ERROR;

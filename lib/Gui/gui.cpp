@@ -3,6 +3,24 @@
 
 
 
+void GUI::removeOldest(){
+    // Here will be stored the oldest objest
+    LoadedText* oldest = nullptr;
+    
+    // Iterate trough entier map and memorize the item with lowst frame value
+    for(auto& lt : loadedTexts){
+        if(oldest == nullptr || *oldest > lt.second){
+            oldest = &(lt.second);
+        }
+    }
+
+    // Free the texture and erase the item from the map
+    TM::freeTexture(oldest->td);
+    loadedTexts.erase(oldest->title);
+}
+
+
+
 string color2hex(const SDL_Color& color){
     ostringstream oss;
     oss << "#";
@@ -17,20 +35,7 @@ string color2hex(const SDL_Color& color){
 GUI::LoadedText* GUI::loadNewText(const string& title, const SDL_Color& color){
     // If there is more loaded Textures then allowed, remove the oldest
     if(loadedTexts.size() >= NUM_OF_LOADED_TEXTURES){
-        
-        // Here will be stored the oldest objest
-        LoadedText* oldest = nullptr;
-        
-        // Iterate trough entier map and memorize the item with lowst frame value
-        for(auto& lt : loadedTexts){
-            if(oldest == nullptr || *oldest > lt.second){
-                oldest = &(lt.second);
-            }
-        }
-
-        // Free the texture and erase the item from the map
-        TM::freeTexture(oldest->td);
-        loadedTexts.erase(oldest->title);
+        removeOldest();
     }
 
     // Create the new LoadedText item
@@ -100,8 +105,7 @@ int GUI::Button(
     // and then on top of it will be white text
     SDL_SetRenderDrawColor(Sys::renderer, buttonColor);
     SDL_RenderFillRect(Sys::renderer, &dRect);
-    cout << "Draw from y:" << dRect.y << " to " << dRect.y+dRect.h << endl;
-
+    
     // Add a 5px padding on the sides, unless the total 
     // width or height of the button is less then 10x10
     int padding = 5;
@@ -203,8 +207,7 @@ void GUI::Rect(
     const int thickness
 ){
     SDL_SetRenderDrawColor(Sys::renderer, color);
-    cout << "Draw from y:" << dRect.y << " to " << dRect.y+dRect.h << endl;
-
+    
     if(thickness == -1){
         SDL_RenderFillRect(Sys::renderer, &dRect);
     } else {
@@ -222,5 +225,239 @@ void GUI::Line(
 ){
     SDL_SetRenderDrawColor(Sys::renderer, color);
     SDL_RenderDrawLine(Sys::renderer, p1, p2);
+}
+
+
+
+
+
+/** Input
+ * 
+ * Renders a Input field using a unique id.
+ * 
+ * The UniqueId should not be changes and needs to be
+ * unique to each input field as it is used for accessing
+ * the stored state of the field. Returing the value of
+ * the filed, the user inputed text.
+ * 
+ * @param uniqueId A unique string intrenaly used to itentify the input field acrros diffrent frames
+ * @param dRect A SDL_Rect representing where and what size should field be rendered
+ * @param placeholder A text displayed on the input filed when input is empty
+ * @param background SDL_Color representing the background field color
+ * @param foreground SDL_Color representing the text color 
+ * @return The value of the field
+ */
+string GUI::Input(
+    const string& uniqueId,
+    const SDL_Rect& dRect,
+    const string& placeholder,
+    const SDL_Color& background,
+    const SDL_Color& foreground
+){  
+    /**
+     * Improvements:
+     *      - Char Position changer, like give the arrows some functionality
+     *        left and right curosr movement, on each focus it should be set to
+     *        max, the last char, but also make it changable using arrows and even
+     *        with mouse click, advanced
+     *        ! Problem: Each char should then be treated individualy as the program
+     *                   must known where to draw the caret, where each char begins
+     */
+
+
+    // Get the pointer to the buttons state using uniqueId
+    InputState* state = nullptr;
+    auto it = inputStates.find(uniqueId);
+    if(it != inputStates.end()){
+        state = &it->second;
+    } else{
+        // If the state doesnt exist, create it
+        inputStates.insert({uniqueId, InputState(uniqueId)});
+        state = &inputStates.at(uniqueId);
+    }
+
+
+    // Draw the field background, white box and black 1px outline
+    GUI::Rect(dRect, background);
+    GUI::Rect(dRect, SDL_COLOR_BLACK, 1);
+
+    // This is the paddings for the text relative to the field
+    int paddingX = 5;
+    int paddingY = 3;
+
+    // Calculate the position and size of the text
+    SDL_Rect textRect = {
+        dRect.x + paddingX, 
+        dRect.y + paddingY,
+        -1,
+        dRect.h - paddingY*2
+    };
+    bool placeholderActive = false;
+
+    // Render the text
+    TM::renderTexture(state->td, textRect);
+
+    // Check if placeholder was rendered
+    if(state->value == "") placeholderActive = true;
+
+    // If the rendered text is larger then the allowed width
+    // and we are also not talking about the placeholder THEN
+    // make the removed variable larger by one, signaling to the
+    // next frame that it should cut out one more frame from the left
+    if(textRect.w > (dRect.w - paddingX*2) && !placeholderActive){
+        state->removed++;
+        state->change = true;
+    }
+
+
+
+    // If the keyboard is focused on the field draw the caret, text cursor
+    if(state->focused){
+        // The cursor would be drawn for half a second and then be not drawn for 
+        // another half a second, this is acheved trough clock which changes value
+        // every (FPS / 2)frames so it can be devieded using %2 operator
+        int blinkClock = static_cast<int>( Sys::getCurrentFrame() / (Sys::FPS / 2) );
+        if(blinkClock % 2){
+            // Top point of the line, default the
+            // x is equal to the starting position of the text
+            SDL_Point p1 = {
+                dRect.x + paddingX, 
+                dRect.y + paddingY
+            };
+            
+            // If the placeholder is not active then draw the 
+            // line at the end of the text.
+            // Else, the placeholder is active, then draw the line
+            // just few pixels behind the placeholder, so its vissible
+            if(!placeholderActive)  p1.x += textRect.w + 1;
+            else                    p1.x -= 2;
+
+            // Bottom point of the line
+            SDL_Point p2 = {
+                p1.x, 
+                p1.y + (dRect.h - paddingY*2)
+            };
+            
+            // Draw the line
+            GUI::Line(p1, p2, SDL_COLOR_BLACK);
+        }
+    }
+    
+
+    // EVENTS ---------------------------------
+    // If the user is hovering the input filed
+    // and he clicks then focus the input onto the filed
+    if(
+        Sys::Mouse::isHovering(dRect) &&
+        Sys::Mouse::isClicked()
+    ) {
+        Sys::Keyboard::focus();
+        state->focused = true;
+    }
+
+    // If user is not hovering the button, cursor is outside
+    // and there is click, that means that there has been unfocus
+    if(
+        !Sys::Mouse::isHovering(dRect) &&
+        Sys::Mouse::isClicked()
+    ){
+        Sys::Keyboard::unfocus();
+        state->focused = false;
+    }
+
+    // A small lambda funtion for handling deletion
+    auto deleteLastChar = [&]() {
+        // If value is already empty skip
+        if (state->value.empty()) return;
+
+        // Pop last char and mark change has been made
+        state->value.pop_back();
+        state->change = true;
+
+        // If there was any chars to be removed, decrease the amount
+        if (state->removed != 0) state->removed--;
+    };
+
+    // If the input is focused handle key presses
+    if(state->focused){
+        // Add the text inputed into the value
+        if(Sys::Keyboard::getText() != "") {
+            state->change = true;
+            state->value += Sys::Keyboard::getText();
+        }
+
+        // If the backspace has been pressed handle deletion
+        if(Sys::Keyboard::getKeyDown() == SDLK_BACKSPACE){
+            // If the input is not in the state of deletion
+            // that menas that this is the first frame that
+            // backspace was pressed, so delete the last char
+            // and mark that the hold of the button has begun
+            if(!state->deleting){
+                deleteLastChar();
+                state->deleting = true;
+            } else{
+                // If the deletion has been going, and the
+                // backspace is still down, holding, every
+                // 200ms delete one last char from the field
+                if(Sys::getCurrentFrame() % (Sys::FPS / 5)){
+                    deleteLastChar();
+                }
+            }
+        } else{
+            // If the backspace is not pressed end the deletion process
+            state->deleting = false;
+        }
+    }
+
+    // Now handle the value changes and updating the texture
+    if(state->change){
+        TM::freeTexture(state->td);
+        
+        string textToCompile;
+        SDL_Color colorOfText = foreground;
+        if(state->value == ""){
+            colorOfText.a *= 0.75;
+            textToCompile = placeholder;
+        } else {
+            // So bc text can get longer then it can fit in the field
+            // program also keeps track of how many characters it needs
+            // to hide from the left side in order for text from the right
+            // side to be vissible and with in the bounds
+            textToCompile = state->value;
+            textToCompile.erase(0, state->removed);
+        }
+
+        TM::createTextTexture(state->td, textToCompile, colorOfText);
+        state->change = false;
+    }
+
+    // Return the value
+    return state->value;
+}
+
+
+
+
+
+/** Destroy Input / Reset Input
+ * 
+ * This function  should be called if you need to 
+ * restart the field or you are sure that its out 
+ * of scope and its data is no longer important.
+ * 
+ * @param uniqueId Id of the input to be reset, destroyed.
+ */
+void GUI::DestroyInput(const string& uniqueId){
+    InputState* state = nullptr;
+    auto it = inputStates.find(uniqueId);
+    if(it != inputStates.end()){
+        state = &it->second;
+    } else{
+        return;
+    }
+
+    TM::freeTexture(state->td);
+    inputStates.erase(it);
+    return;
 }
 

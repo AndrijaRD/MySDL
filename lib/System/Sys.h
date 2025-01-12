@@ -95,12 +95,21 @@ class Sys{
         friend class Sys;
 
         protected:
-            static inline SDL_Keycode key;
+            static inline SDL_Keycode keyUp;
+            static inline SDL_Keycode keyDown;
             static inline string text;
 
+            static inline bool focused = false;
+            static inline bool pendingFocus = false;
+            static inline bool pendingUnFocus = false;
+
         public:
-            static inline SDL_Keycode getKey();  
-            static inline string getText();
+            static SDL_Keycode getKeyUp();
+            static SDL_Keycode getKeyDown();
+            static string getText();
+            static bool isFocused();
+            static void focus();
+            static void unfocus();
     };
 
 };

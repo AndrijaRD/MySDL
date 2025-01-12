@@ -21,19 +21,19 @@
 struct Statement {
     string name;
     string command;
-    int nParams;
     int type;
+    int nParams;
     bool prepared;
 
     Statement(
         const string& name,
         const string& command,
-        const int numOfParams,
-        const int commandType
+        const int commandType = SQL_SELECT,
+        const int numOfParams = 0
     ):  name(name), 
         command(command), 
-        nParams(numOfParams), 
         type(commandType), 
+        nParams(numOfParams), 
         prepared(false) 
     {}
 };
@@ -54,6 +54,8 @@ inline ostream& operator<<(ostream& os, const Statement& s){
 }
 
 
+
+
 class DBResult {
     friend class DB;
 private:
@@ -65,82 +67,28 @@ public:
         if (result) PQclear(result);
     }
 
+    bool isValid() const { return result != nullptr; };
 
+    int rowCount() const    { return (isValid() ? PQntuples(result) : -1); };
+    int columnCount() const { return (isValid() ? PQnfields(result) : -1); };
 
-    /**
-     * Returns if the result pointer is valid, not nullptr.
-     * 
-     * @return True if valid, False if nullptr
-     */
-    bool isValid() const {
-        return result != nullptr;
-    }
+    string getValue(int row, int column) const {
+        if ( !isValid() || row >= rowCount() || column >= columnCount()) return "";
+        return PQgetvalue(result, row, column);
+    };
 
-
-
-    /**
-     * Returns the number of rows in the result.
-     * It doesnt check if the result is valid so do it manually
-     * before calling this function.
-     * 
-     * @return Number of rows
-     */
-    int rowCount() const {
-        return PQntuples(result);
-    }
-
-
-
-    /**
-     * Returns the number of columns in the result.
-     * It doesnt check if the result is valid so do it manually
-     * before calling this function.
-     * 
-     * @return Number of columns
-     */
-    int columnCount() const {
-        return PQnfields(result);
-    }
-
-
-
-    /**
-     * Gets the value of the specific cell using
-     * provided row and column and saves it into
-     * the string param value.
-     * 
-     * @param row The cell's row
-     * @param column The cell's column
-     * @param value Where the value of the cell will be saved
-     * @return 0 on sucess and positive on error 
-     */
-    int getValue(int row, int column, string& value) const {
-        if (!isValid()){
-            return DB_INVALID_RESULT;
-        }
-
-        if (row >= rowCount() || column >= columnCount()){
-            return DB_INVALID_ROW_COLUMN;
-        }
-
-        if (PQgetisnull(result, row, column) == 0) {
-            return DB_INVALID_RES_VALUE;
-        }
-
-        value = PQgetvalue(result, row, column);
-        return NO_ERROR;
-    }
-
-    ExecStatusType status() const {
-        return PQresultStatus(result);
-    }
-
-    const char* errorMessage() const {
-        return PQresultErrorMessage(result);
-    }
+    ExecStatusType status() const    { return PQresultStatus(result); };
+    const char* errorMessage() const { return PQresultErrorMessage(result); };
 };
 
-
+inline ostream& operator<<(ostream& os, const DBResult& res){
+    os << "Result(";
+        os << "Valid: "     << res.isValid();
+        os << ", Rows: "    << res.rowCount();
+        os << ", Columns: " << res.columnCount();
+    os << ")";
+    return os;
+}
 
 
 

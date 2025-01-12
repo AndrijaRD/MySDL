@@ -3,6 +3,7 @@
 
 unordered_map<int, string> Sys::errorMap = {
     {NO_ERROR,                          "NO_ERROR"},
+
     {SYS_SDL_INIT_ERROR,                "SYS_SDL_INIT_ERROR"},
     {SYS_FONT_INIT_ERROR,               "SYS_FONT_INIT_ERROR"},
     {SYS_FONT_PATH_ERROR,               "SYS_FONT_PATH_ERROR"},
@@ -10,17 +11,22 @@ unordered_map<int, string> Sys::errorMap = {
     {SYS_RENDERER_INIT_ERROR,           "SYS_RENDERER_INIT_ERROR"},
     {SYS_FPS_TOO_LOW,                   "SYS_FPS_TOO_LOW"},
     {SYS_FPS_TOO_HIGH,                  "SYS_FPS_TOO_HIGH"},
+
     {TM_SURFACE_CREATE_ERROR,           "TM_SURFACE_CREATE_ERROR"},
     {TM_SURFACE_CONVERT_ERROR,          "TM_SURFACE_CONVERT_ERROR"},
     {TM_TEXTURE_CREATE_ERROR,           "TM_TEXTURE_CREATE_ERROR"},
+    {TM_TEXTURE_SET_BLENDMODE_ERROR,    "TM_TEXTURE_SET_BLENDMODE_ERROR"},
     {TM_TEXTURE_UPDATE_ERROR,           "TM_TEXTURE_UPDATE_ERROR"},
-    {TM_RENDER_INVALID_DRECT,           "TM_RENDER_INVALID_DRECT"},
-    {TM_RENDER_RCPY_FAILED,             "TM_RENDER_RCPY_FAILED"},
-    {TM_DRAW_OVERLAY_SRT_FAILED,        "TM_DRAW_OVERLAY_SRT_FAILED"},
-    {TM_DRAW_OVERLAY_RCPY_FAILED,       "TM_DRAW_OVERLAY_RCPY_FAILED"},
-    {TM_DRAW_OVERLAY_SRDC_FAILED,       "TM_DRAW_OVERLAY_SRDC_FAILED"},
-    {TM_DRAW_OVERLAY_FILL_RECT_ERROR,   "TM_DRAW_OVERLAY_FILL_RECT_ERROR"},
-    {TM_DRAW_OVERLAY_BAD_LINE_LENGTH,   "TM_DRAW_OVERLAY_BAD_LINE_LENGTH"},
+    {TM_GOT_NULLPTR_TEX,                "TM_GOT_NULLPTR_TEX"},
+    {TM_INVALID_DRECT,                  "TM_INVALID_DRECT"},
+    {TM_RCPY_FAILED,                    "TM_RCPY_FAILED"},
+    {TM_SRT_FAILED,                     "TM_SRT_FAILED"},
+    {TM_SRDC_FAILED,                    "TM_SRDC_FAILED"},
+    {TM_RCLR_FAILED,                    "TM_RCLR_FAILED"},
+    {TM_FILL_RECT_ERROR,                "TM_FILL_RECT_ERROR"},
+    {TM_INVALID_LINE_LENGTH,            "TM_INVALID_LINE_LENGTH"},
+    
+
     {DB_CONNECTION_ERROR,               "DB_CONNECTION_ERROR"},
     {DB_PREPARE_ERROR,                  "DB_PREPARE_ERROR"},
     {DB_EXEC_RESULT_ERROR,              "DB_EXEC_RESULT_ERROR"},
@@ -141,6 +147,13 @@ int Sys::handleEvents(){
     SDL_RenderClear(Sys::r);
 
 
+    // Keyboard Focus
+    if(Keyboard::pendingUnFocus) Keyboard::focused = false;
+    if(Keyboard::pendingFocus) Keyboard::focused = true;
+    Keyboard::pendingFocus = false;
+    Keyboard::pendingUnFocus = false;
+
+
     // GET NEW FRAME VALUES -------------------------------------------------------------------------------------------
     SDL_GetWindowSize(Sys::win, &Sys::wWidth, &Sys::wHeight);               // Getting window width and height
     Uint32 mouseState = SDL_GetMouseState(&Mouse::pos.x, &Mouse::pos.y);    // Getting mouse states and position
@@ -161,6 +174,8 @@ int Sys::handleEvents(){
     // HANDLE EVENTS --------------------------------------------------------------------------------------------------
     SDL_Event event;
     Keyboard::text.clear();
+    Keyboard::keyUp = 0;
+    Keyboard::keyDown = 0;
 
     while(SDL_PollEvent(&event)){
         if(event.type == SDL_QUIT){
@@ -168,8 +183,15 @@ int Sys::handleEvents(){
         }
 
         if(event.type == SDL_KEYUP){
-            Keyboard::key = event.key.keysym.sym;
-            Keyboard::text += string(SDL_GetKeyName(Keyboard::key));
+            Keyboard::keyUp = event.key.keysym.sym;
+        }
+
+        if(event.type == SDL_KEYDOWN){
+            Keyboard::keyDown = event.key.keysym.sym;
+        }
+
+        if(event.type == SDL_TEXTINPUT){
+            Keyboard::text += event.text.text;
         }
     }
 
@@ -201,12 +223,10 @@ int Sys::presentFrame(){
         SDL_Delay(timeRemaining);
 
         if(dynamicFPS){
-            cout << "[INFO] The game was able to keep up, increasing the FPS." << endl;
             int additionalFrames = timeRemaining / (1000 / FPS);
             FPS = std::min(maxFPS, FPS + additionalFrames);
         }
     } else {
-        cout << "[INFO] The game could not keep up so it reduced the FPS." << endl;
         error |= SYS_FPS_TOO_HIGH;
         if(dynamicFPS) {
             FPS = std::max(minFPS, FPS - 5);
@@ -277,6 +297,10 @@ bool Sys::Mouse::isHovering(const SDL_Rect& rect) {
 }
 
 
-SDL_Keycode Sys::Keyboard::getKey() { return key; }
+SDL_Keycode Sys::Keyboard::getKeyUp() { return keyUp; }
+SDL_Keycode Sys::Keyboard::getKeyDown() { return keyDown; }
 string Sys::Keyboard::getText() { return text; }
 
+bool Sys::Keyboard::isFocused() { return isFocused; }
+void Sys::Keyboard::focus() { pendingFocus = true; }
+void Sys::Keyboard::unfocus() { pendingUnFocus = true; }

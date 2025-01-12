@@ -49,6 +49,7 @@ inline Uint32 toUint32(const SDL_Color& color) {
 
 // ERRORS ----------------------------------------------------------------------
 #define NO_ERROR                        0x00
+
 #define SYS_SDL_INIT_ERROR              0x01
 #define SYS_FONT_INIT_ERROR             0x02
 #define SYS_FONT_PATH_ERROR             0x03
@@ -63,14 +64,14 @@ inline Uint32 toUint32(const SDL_Color& color) {
 #define TM_TEXTURE_CREATE_ERROR         0x22
 #define TM_TEXTURE_SET_BLENDMODE_ERROR  0x23
 #define TM_TEXTURE_UPDATE_ERROR         0x24
-#define TM_RENDER_INVALID_DRECT         0x25        // SDL_Rect drect           Invalid
-#define TM_RENDER_RCPY_FAILED           0x26        // SDL_RenderCopy           Failed
-#define TM_DRAW_OVERLAY_SRT_FAILED      0x27        // SDL_SetRenderTarget      Failed
-#define TM_DRAW_OVERLAY_RCPY_FAILED     0x28        // SDL_RenderCopy           Failed
-#define TM_DRAW_OVERLAY_SRDC_FAILED     0x29        // SDL_SetRenderDrawColor   Failed
-#define TM_DRAW_OVERLAY_FILL_RECT_ERROR 0x2a        // SDL_RenderFillRect       Failed
-#define TM_DRAW_OVERLAY_BAD_LINE_LENGTH 0x2b
-//#define TM_DRAW_OVERLAY_RCLR_FAILED   0x2c        // SDL_RenderClear          Failed
+#define TM_GOT_NULLPTR_TEX              0x25
+#define TM_INVALID_DRECT                0x26        // SDL_Rect dRect           Invalid
+#define TM_RCPY_FAILED                  0x27        // SDL_RenderCopy           Failed
+#define TM_SRT_FAILED                   0x28        // SDL_SetRenderTarget      Failed
+#define TM_SRDC_FAILED                  0x29        // SDL_SetRenderDrawColor   Failed
+#define TM_RCLR_FAILED                  0x2a        // SDL_RenderClear          Failed
+#define TM_FILL_RECT_ERROR              0x2b        // SDL_RenderFillRect       Failed
+#define TM_INVALID_LINE_LENGTH          0x2c
 //  TM RESERVED                         0x3f
 
 #define DB_CONNECTION_ERROR             0x40
@@ -100,6 +101,12 @@ inline std::ostream& operator<<(std::ostream& os, const dateT& date){
     return os;
 }
 
+inline dateT string2date(const string& dateStr){
+    dateT date;
+    sscanf(dateStr.c_str(), "%4u-%2u-%2u", &date.year, &date.month, &date.day);
+    return date;
+}
+
 // TIME ------------------------------------------------------------------------
 typedef struct {
     uint hour;
@@ -115,6 +122,13 @@ inline std::ostream& operator<<(std::ostream& os, const timeT time){
     os << oss.str();
     return os;
 }
+
+inline timeT string2time(const string& timeStr){
+    timeT time;
+    sscanf(timeStr.c_str(), "%2u:%2u:%2u", &time.hour, &time.minute, &time.second);
+    return time;
+}
+
 
 
 // WRAPPERS -------------------------------------------------------------------

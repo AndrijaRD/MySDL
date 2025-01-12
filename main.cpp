@@ -51,23 +51,47 @@ int main(){
         cout << res.rowCount() << endl;
 
 
-        // Example Button 
-        int state = GUI::Button("Click me!", {20, 20, 80, 100});
-        if(state == GUI_CURSOR_HOVERING) cout << "Hovering the button" << endl;
-        if(state == GUI_CURSOR_DRAGGING) cout << "Dragging the button" << endl;
-        if(state == GUI_CURSOR_CLICKED) cout << "Clicked the button" << endl;
-        if(state == GUI_CURSOR_OUTSIDE) cout << "Cursor is outside of the button" << endl;
+        // Example Button ----------------------------------------------------
+        int state = GUI::Button(
+            "Click me!", 
+            {20, 20, 100, 40}, 
+            SDL_COLOR_WHITE, 
+            {24, 24, 80, 255}
+        );
 
+        string text;
+        if(state == GUI_CURSOR_HOVERING) text = "Hovering the button";
+        if(state == GUI_CURSOR_DRAGGING) text = "Dragging the button";
+        if(state == GUI_CURSOR_CLICKED) text = "Clicked the button";
+        if(state == GUI_CURSOR_OUTSIDE) text = "Cursor is outside of the button";
 
-        // Example Rect
-        GUI::Rect({30, 120, 100, 20});
-
-
-        // Example Text
+        // Example Text ------------------------------------------------------
         SDL_Rect textRect = {20, 140, -1, 40};
-        GUI::Text("Hello World!", textRect, SDL_COLOR_BLUE);
-        cout << "Text width was dinamicly calculated to be: " << textRect.w << "px" << endl;
+        GUI::Text(text, textRect, SDL_COLOR_BLUE);
 
+
+        // Example Rect ------------------------------------------------------
+        SDL_Color color = {
+            Sys::getCurrentFrame() % 255,
+            255 - (Sys::getCurrentFrame() % 255),
+            255,
+            180
+        };
+        GUI::Rect({180, 40, 100, 50}, color);
+
+
+        
+        // Example Input Box -------------------------------------------------
+        string value = GUI::Input(
+            "input1", 
+            {50, 200, 200, 30}, 
+            "My Placeholder...",
+            SDL_COLOR_WHITE,
+            SDL_COLOR_BLACK
+        );
+        cout << "You Typed: " << value << endl;
+
+        if(state == GUI_CURSOR_CLICKED) GUI::DestroyInput("input1");
 
         // YOU ARE ABLE TO TRACK THE NUMBER OF LOADED TEXTURES --------------------------
         cout << "Number of loaded Textures: " << TM::getLoadedTextures() << "\n" << endl;

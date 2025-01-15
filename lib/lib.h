@@ -38,6 +38,7 @@ namespace fs = std::filesystem;
 #define SDL_COLOR_SEMI_TRANSP   {120,   120,    120,    127}
 #define SDL_COLOR_TRANSP        {255,   255,    255,    0  }
 #define SDL_COLOR_GRAY          {120,   120,    120,    255}
+#define SDL_COLOR_M_GUN         {32,    32,     45,     255}
 
 inline Uint32 toUint32(const SDL_Color& color) {
     return (static_cast<Uint32>(color.r) << 24) |

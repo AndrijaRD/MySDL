@@ -3,6 +3,14 @@
 
 
 
+
+
+/** Remove Oldest
+ * 
+ * INTERNAL USE
+ * 
+ * Used for removing the oldest text texture of loadedTexts map.
+ */
 void GUI::removeOldest(){
     // Here will be stored the oldest objest
     LoadedText* oldest = nullptr;
@@ -21,6 +29,7 @@ void GUI::removeOldest(){
 
 
 
+
 string color2hex(const SDL_Color& color){
     ostringstream oss;
     oss << "#";
@@ -32,6 +41,15 @@ string color2hex(const SDL_Color& color){
 }
 
 
+
+
+/** Load New Text
+ * 
+ * INTERNAL FUNCTION
+ * 
+ * Funtion for inserting a new text texture into map.
+ * It also calles removeOldest if map is full.
+ */
 GUI::LoadedText* GUI::loadNewText(const string& title, const SDL_Color& color){
     // If there is more loaded Textures then allowed, remove the oldest
     if(loadedTexts.size() >= NUM_OF_LOADED_TEXTURES){
@@ -54,9 +72,11 @@ GUI::LoadedText* GUI::loadNewText(const string& title, const SDL_Color& color){
 }
 
 
+
+
 /** GUI Button
  * 
- * This function renders a button.
+ * This function renders a button. It supports all style pushs.
  * 
  * @param title Button text, which is dinamicly calculated to fit into the button and to be centered
  * @param dRect It represents position and size of the button, must be possitive, all of the value
@@ -74,18 +94,27 @@ int GUI::Button(
     const SDL_Color& textColor,
     const SDL_Color& buttonColor
 ){
-    // Improvements:
-    //      - Text color:
-    //          To identifier of the unrodered_map loadedText add the text color like:
-    //          "Click Me!" + "#ffffffff" so in the map its "Click me!#ffffffff"
-    //          So user can render buttons with custom colors and have them PreCompiled
-    //      - Backgound color:
-    //          Just to be able to change the color of the button it self, 
-    //          insted of it being black like only current state now
+    // COPY STYLES -------------------------------------------------------
+    // First we copy the pushed styles
+    int fontSize = GUI::pFontSize;
+    GUI::pFontSize = -1;
+
+    int textAlignX = GUI::pTextAlignX;
+    if(textAlignX == -1) textAlignX = GUI_ALIGN_CENTER; // Default
+    GUI::pTextAlignX = -1;
+
+    int textAlignY = GUI::pTextAlignY;
+    if(textAlignY == -1) textAlignY = GUI_ALIGN_CENTER; // Default
+    GUI::pTextAlignY = -1;
 
 
+
+    // CHECK VALIDITY OF dRect -------------------------------------------
     if(dRect.w < 1 || dRect.h < 1) return GUI_CURSOR_OUTSIDE;
 
+
+
+    // FIND BUTTON TEXTURE
     LoadedText* textPointer = nullptr;
     string id = title + color2hex(textColor);
 
@@ -101,11 +130,16 @@ int GUI::Button(
         textPointer = loadNewText(title, textColor);
     }
 
+
+
+    // BUTTON BACK -------------------------------------------------------
     // Render the buttons background, filled rect, 
     // and then on top of it will be white text
     SDL_SetRenderDrawColor(Sys::renderer, buttonColor);
     SDL_RenderFillRect(Sys::renderer, &dRect);
     
+
+
     // Add a 5px padding on the sides, unless the total 
     // width or height of the button is less then 10x10
     int padding = 5;
@@ -116,49 +150,57 @@ int GUI::Button(
     int maxTextWidth = dRect.w - padding*2;
     int maxTextHeight = dRect.h - padding*2;
 
-    // Now for the first check, we set up the texts height to
-    // maximal height and then using aspect ratio calculate the width
-    // so we can check if that with can fit in the maxTextWidth
-    int textWidth = textPointer->td.width * (float)maxTextHeight / textPointer->td.height;
-    int textHeight = maxTextHeight;
+    // TEXT DRECT --------------------------------------------------------
+    SDL_Rect text_dRect;
 
-    // If it can fit, render it
-    if(textWidth <= maxTextWidth){
-        // Also calculate the difference between maxWidth and realWidth
-        // so the text can be horizontaly centered in the button
-        int difference = maxTextWidth - textWidth;
-        SDL_Rect text_dRect = {
-            dRect.x + padding + difference/2,
-            dRect.y + padding,
-            textWidth,
-            textHeight
-        };
+    if(fontSize == -1){
+        // if required width is less then maximal allowed then
+        // the height is the limiting factor, so its max height
 
-        // Now render the text
-        int err = TM::renderTexture(textPointer->td, text_dRect);
-        CHECK_ERROR(err);
-
-    } else {
-        // If the text wasnt able to fit in the button with the
-        // max height, then we will make text as wide as possible
-        // and height will be calculated dinamicly using aspect
-        // ratio, just like width was in the begginging.
-        textWidth = maxTextWidth;
-        textHeight = textPointer->td.height * (float)maxTextWidth / textPointer->td.width;
-
-        // Find the difference to make the text verticly centered in the button
-        int difference = maxTextHeight - textHeight;
-        SDL_Rect text_dRect = {
-            dRect.x + padding,
-            dRect.y + padding + difference/2,
-            textWidth,
-            textHeight
-        };
-
-        // Now render the text
-        int err = TM::renderTexture(textPointer->td, text_dRect);
-        CHECK_ERROR(err);
+        // We calc the text width in case of max height and compare it to max allowed width
+        int textWidth = textPointer->td.width * (float)maxTextHeight / textPointer->td.height;
+        if(textWidth <= maxTextWidth){
+            // This means that text is maximal height, 
+            // and width is less then max, there will be
+            // left-right free space
+            text_dRect.h = maxTextHeight;
+        } else {
+            // This means that text is maximal width, 
+            // and height is less then max, there will be
+            // top-bottom free space
+            textWidth = maxTextWidth;
+            text_dRect.h = textPointer->td.height * (float)maxTextWidth / textPointer->td.width;
+        }
+    } else{
+        text_dRect.h = fontSize;
     }
+
+
+    // DRECT WIDTH -----------------------------------------------------------------
+    text_dRect.w = text_dRect.h * (float)textPointer->td.width / textPointer->td.height;
+
+    // DRECT X POS
+    if(textAlignX == GUI_ALIGN_LEFT){
+        text_dRect.x = dRect.x + padding;
+    } else if(textAlignX == GUI_ALIGN_CENTER){
+        text_dRect.x = dRect.x + dRect.w/2 - text_dRect.w/2;
+    } else if(textAlignX == GUI_ALIGN_RIGHT){
+        text_dRect.x = dRect.x + dRect.w - padding - text_dRect.w;
+    }
+
+    // DRECT Y POS
+    if(textAlignY == GUI_ALIGN_TOP){
+        text_dRect.y = dRect.y + padding;
+    } else if(textAlignY == GUI_ALIGN_CENTER) {
+        text_dRect.y = dRect.y + dRect.h/2 - text_dRect.h/2;
+    } else if(textAlignY == GUI_ALIGN_BOTTOM) {
+        text_dRect.y = dRect.y + dRect.h - padding - text_dRect.h;
+    }
+
+
+    // Now render the text
+    int err = TM::renderTexture(textPointer->td, text_dRect);
+    CHECK_ERROR(err);
 
     if(Sys::Mouse::isHovering(dRect)){
         if(Sys::Mouse::isClicked()){
@@ -176,6 +218,21 @@ int GUI::Button(
 
 
 
+
+/** Text
+ * 
+ * Draws a optimized verion of text on the screen.
+ * It doesnt respond to any push styles since all of them
+ * can be controlled trough dRect param.
+ * 
+ * @param title Text to be rendered.
+ * @param dRect position and size of the text, one dimension can be left as -1 for
+ *              dynamic calculation, eg. set height to font size and width as -1
+ *              and after the render you can check dRect that was passed and the
+ *              width will be calculated and dRect will be updated, replacing -1
+ * @param color The color of the text
+ * 
+ */
 void GUI::Text(const string& title, SDL_Rect& dRect, const SDL_Color& color){
     if(dRect.w < 1 && dRect.h < 1) return;
 
@@ -201,13 +258,59 @@ void GUI::Text(const string& title, SDL_Rect& dRect, const SDL_Color& color){
 
 
 
+/** Text Dynamic
+ * 
+ * Draws a text that is not cached anywhere, the texture is created,
+ * rendered and then destroyed, its not optimal, but it shold be used for 
+ * highly changable texts, like the ones that change every frame so there
+ * is no point is storing them as they will never be reused unline regular
+ * GUI::Text which is optimised so it stores all texture in case of re-use.
+ * 
+ * @param title Text to be rendered.
+ * @param dRect position and size of the text, one dimension can be left as -1 for
+ *              dynamic calculation, eg. set height to font size and width as -1
+ *              and after the render you can check dRect that was passed and the
+ *              width will be calculated and dRect will be updated, replacing -1
+ * @param color The color of the text
+ * 
+ */
+void GUI::TextDynamic(const string& title, SDL_Rect& dRect, const SDL_Color& color){
+    if(dRect.w < 1 && dRect.h < 1) return;
+
+    // Create the texture
+    TextureData td;
+    int err = TM::createTextTexture(td, title, color);
+    CHECK_ERROR(err);
+
+    // Render the texture
+    TM::renderTexture(td, dRect);
+
+    // Free Texture Data
+    TM::freeTexture(td); 
+}
+
+
+
+
+
+
+/** Rect
+ * 
+ * This function can currently draw either
+ * a filled rect or a rect outline with 1px lines.
+ * 
+ * @param dRect the position and size of the rect
+ * @param colo the rects color
+ * @param thickness if its -1 then it will be filled rect, otherwise outline
+ * 
+ */
 void GUI::Rect(
     const SDL_Rect& dRect,
     const SDL_Color& color,
     const int thickness
 ){
     SDL_SetRenderDrawColor(Sys::renderer, color);
-    
+
     if(thickness == -1){
         SDL_RenderFillRect(Sys::renderer, &dRect);
     } else {
@@ -217,11 +320,20 @@ void GUI::Rect(
 
 
 
+
+
+/** Line
+ * 
+ * Draws a 1px thick line from p1 to p2 with custom color
+ * 
+ * @param p1 SDL_Point line start coordinates
+ * @param p2 SDL_Point line end coordinates
+ * @param color SDL_Color line color
+ */
 void GUI::Line(
     const SDL_Point& p1,
     const SDL_Point& p2,
-    const SDL_Color& color,
-    const int thickness
+    const SDL_Color& color
 ){
     SDL_SetRenderDrawColor(Sys::renderer, color);
     SDL_RenderDrawLine(Sys::renderer, p1, p2);
@@ -265,6 +377,22 @@ string GUI::Input(
      */
 
 
+    // COPY STYLES -------------------------------------------------------
+    // First we copy the pushed styles
+    int fontSize = GUI::pFontSize;
+    GUI::pFontSize = -1;
+
+    int textAlignX = GUI::pTextAlignX;
+    if(textAlignX == -1) textAlignX = GUI_ALIGN_LEFT; // Default
+    GUI::pTextAlignX = -1;
+
+    int textAlignY = GUI::pTextAlignY;
+    if(textAlignY == -1) textAlignY = GUI_ALIGN_CENTER; // Default
+    GUI::pTextAlignY = -1;
+
+
+
+    // FIND STATE --------------------------------------------------------
     // Get the pointer to the buttons state using uniqueId
     InputState* state = nullptr;
     auto it = inputStates.find(uniqueId);
@@ -277,27 +405,59 @@ string GUI::Input(
     }
 
 
-    // Draw the field background, white box and black 1px outline
-    GUI::Rect(dRect, background);
-    GUI::Rect(dRect, SDL_COLOR_BLACK, 1);
 
+    // DRAW BACKGROUND ---------------------------------------------------
+    GUI::Rect(dRect, background);           // Background field
+    GUI::Rect(dRect, SDL_COLOR_BLACK, 1);   // 1px black Outline
+
+
+
+    // DEFINE PADDING ----------------------------------------------------
     // This is the paddings for the text relative to the field
     int paddingX = 5;
     int paddingY = 3;
 
-    // Calculate the position and size of the text
-    SDL_Rect textRect = {
-        dRect.x + paddingX, 
-        dRect.y + paddingY,
-        -1,
-        dRect.h - paddingY*2
-    };
-    bool placeholderActive = false;
+
+
+    // TEXT RECT CALCULATION ---------------------------------------------
+    SDL_Rect textRect; // Calculate the position and size of the text
+
+    // TEXT RECT HEIGHT --------------------------------------------------
+    // If there is no fontSize speicified make the font max height
+    if(fontSize == -1){
+        textRect.h = dRect.h - paddingY*2;
+    } else {
+        textRect.h = fontSize;
+    }
+
+    // TEXT RECT WIDTH ---------------------------------------------------
+    textRect.w = textRect.h * (float)state->td.width / state->td.height;
+
+    // TEXT RECT X POS ---------------------------------------------------
+    // Depending on the placement, left, center, right. Default: left
+    if(textAlignX == GUI_ALIGN_LEFT){
+        textRect.x = dRect.x + paddingX;
+    } else if(textAlignX == GUI_ALIGN_RIGHT){
+        textRect.x = dRect.x + dRect.w - paddingX - textRect.w;
+    } else if(textAlignX == GUI_ALIGN_CENTER){
+        textRect.x = dRect.x + dRect.w/2 - textRect.w/2;
+    }
+
+    // TEXT RECT Y POS ---------------------------------------------------
+    if(textAlignY == GUI_ALIGN_BOTTOM){
+        textRect.y = dRect.y + dRect.h - paddingY - textRect.h;
+    } else if(textAlignY == GUI_ALIGN_CENTER){
+        textRect.y = dRect.y + dRect.h/2 - textRect.h/2;
+    } else if(textAlignY == GUI_ALIGN_TOP){
+        textRect.y = dRect.y + paddingY;
+    }
+    
 
     // Render the text
     TM::renderTexture(state->td, textRect);
 
     // Check if placeholder was rendered
+    bool placeholderActive = false;
     if(state->value == "") placeholderActive = true;
 
     // If the rendered text is larger then the allowed width
@@ -320,17 +480,23 @@ string GUI::Input(
         if(blinkClock % 2){
             // Top point of the line, default the
             // x is equal to the starting position of the text
-            SDL_Point p1 = {
-                dRect.x + paddingX, 
-                dRect.y + paddingY
-            };
+            SDL_Point p1 = {0, dRect.y + paddingY};
             
             // If the placeholder is not active then draw the 
             // line at the end of the text.
             // Else, the placeholder is active, then draw the line
             // just few pixels behind the placeholder, so its vissible
-            if(!placeholderActive)  p1.x += textRect.w + 1;
-            else                    p1.x -= 2;
+            if(placeholderActive){
+                if(textAlignX == GUI_ALIGN_LEFT){
+                    p1.x = dRect.x + paddingX;
+                } else if(textAlignX == GUI_ALIGN_CENTER){
+                    p1.x = dRect.x + dRect.w/2;
+                } else if(textAlignX == GUI_ALIGN_RIGHT){
+                    p1.x = dRect.x + dRect.w - paddingX;
+                }
+            } else {
+                p1.x = textRect.x + textRect.w + 1;
+            }
 
             // Bottom point of the line
             SDL_Point p2 = {
@@ -461,3 +627,9 @@ void GUI::DestroyInput(const string& uniqueId){
     return;
 }
 
+
+
+
+void GUI::pushFontSize(const int& fontSize) { pFontSize = fontSize; }
+void GUI::pushTextAlignX(const int& value)  { pTextAlignX = value;  }
+void GUI::pushTextAlignY(const int& value)  { pTextAlignY = value;  }

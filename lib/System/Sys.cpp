@@ -42,11 +42,10 @@ unordered_map<int, string> Sys::errorMap = {
  * Sets up the entier SDL system.
  * Creates Window.
  * Creates Renderer.
- * Initializes the Fonts.
  * 
  * @return 0 on success and positive on error, coresponding to ERROR DEFINITIONS
  */
-int Sys::init(
+int Sys::initWindow(
     const string& winTitle,
     const bool& fullscreen,
     const int& windowWidth,
@@ -65,22 +64,6 @@ int Sys::init(
         cout << "[FATAL] Failed to initialize subsystems!" << endl;
         return SYS_SDL_INIT_ERROR;
     }
-
-
-    // FONT INIT ---------------------------------------------------------
-    status = TTF_Init();
-    if(status != 0){
-        cout << "[FATAL] Failed to initialize fonts!" << endl;
-        return SYS_FONT_INIT_ERROR;
-    }
-
-    font = TTF_OpenFont(fontPath.c_str(), 108);
-    if(font == nullptr){
-        cout << "[FATAL] Failed to load font!" << endl;
-        return SYS_FONT_PATH_ERROR;
-    }
-
-    cout << "[INIT] Fonts Initialized..." << endl;
 
 
     // CREATE WINDOW ------------------------------------------------------
@@ -114,6 +97,36 @@ int Sys::init(
     }
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
 
+    return NO_ERROR;
+}
+
+
+
+
+/** Font Init
+ * 
+ * Initializes the Fonts.
+ * 
+ * @return 0 on success and positive on error, coresponding to ERROR DEFINITIONS
+ */
+int Sys::initFont(const string& fontPath){
+    // FONT INIT ---------------------------------------------------------
+    int status = TTF_Init();
+    if(status != 0){
+        cout << "[FATAL] Failed to initialize fonts!" << endl;
+        return SYS_FONT_INIT_ERROR;
+    }
+
+    // Create Font Object
+    font = TTF_OpenFont(fontPath.c_str(), 108);
+    if(font == nullptr){
+        cout << "[FATAL] Failed to load font!" << endl;
+        return SYS_FONT_PATH_ERROR;
+    }
+
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
+    cout << "[INIT] Fonts Initialized..." << endl;
     return NO_ERROR;
 }
 
@@ -222,15 +235,15 @@ int Sys::presentFrame(){
         uint64_t timeRemaining = (1000 / FPS) - currentFrameDuration;
         SDL_Delay(timeRemaining);
 
-        if(dynamicFPS){
-            int additionalFrames = timeRemaining / (1000 / FPS);
-            FPS = std::min(maxFPS, FPS + additionalFrames);
-        }
+        // if(dynamicFPS){
+        //     int additionalFrames = timeRemaining / (1000 / FPS);
+        //     FPS = std::min(maxFPS, FPS + additionalFrames);
+        // }
     } else {
-        error |= SYS_FPS_TOO_HIGH;
-        if(dynamicFPS) {
-            FPS = std::max(minFPS, FPS - 5);
-        }
+        error = SYS_FPS_TOO_HIGH;
+        // if(dynamicFPS) {
+        //     FPS = std::max(minFPS, FPS - 5);
+        // }
     }
 
 
@@ -280,11 +293,11 @@ void Sys::setClearColor(const SDL_Color& color) { clearColor = color; }
 
 int Sys::getFPS() { return FPS; }
 void Sys::setFPS(const int& newFPS ) { FPS = min(max(20, newFPS), 144); }
-void Sys::setDynamicFPS(bool dFPS, int maxF, int minF){
-    dynamicFPS = dFPS;
-    maxFPS = std::max(20, maxF);
-    minFPS = std::min(20, minF);
-}
+// void Sys::setDynamicFPS(bool dFPS, int maxF, int minF){
+//     dynamicFPS = dFPS;
+//     maxFPS = std::max(20, maxF);
+//     minFPS = std::min(20, minF);
+// }
 int Sys::getCurrentFrame() { return frameCounter; }
 
 
@@ -301,6 +314,6 @@ SDL_Keycode Sys::Keyboard::getKeyUp() { return keyUp; }
 SDL_Keycode Sys::Keyboard::getKeyDown() { return keyDown; }
 string Sys::Keyboard::getText() { return text; }
 
-bool Sys::Keyboard::isFocused() { return isFocused; }
+bool Sys::Keyboard::isFocused() { return focused; }
 void Sys::Keyboard::focus() { pendingFocus = true; }
 void Sys::Keyboard::unfocus() { pendingUnFocus = true; }

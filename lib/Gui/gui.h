@@ -12,6 +12,12 @@
 #define GUI_CURSOR_HOVERING    2
 #define GUI_CURSOR_DRAGGING    3
 
+#define GUI_ALIGN_LEFT      1
+#define GUI_ALIGN_CENTER    2
+#define GUI_ALIGN_RIGHT     3
+#define GUI_ALIGN_TOP       4
+#define GUI_ALIGN_BOTTOM    5
+
 
 
 string color2hex(const SDL_Color& color);
@@ -65,15 +71,27 @@ private:
 
     static inline unordered_map<string, InputState> inputStates;
 
+
+    // Pushed styles
+    static inline int pFontSize = -1;
+    static inline int pTextAlignY = -1;
+    static inline int pTextAlignX = -1; 
+
 public:
     static int Button(
         const string& title, 
         const SDL_Rect& dRect,
         const SDL_Color& textColor = SDL_COLOR_WHITE,
-        const SDL_Color& buttonColor = SDL_COLOR_BLACK
+        const SDL_Color& buttonColor = SDL_COLOR_M_GUN
     );
 
     static void Text(
+        const string& title, 
+        SDL_Rect& dRect, 
+        const SDL_Color& color = SDL_COLOR_WHITE
+    );
+
+    static void TextDynamic(
         const string& title, 
         SDL_Rect& dRect, 
         const SDL_Color& color = SDL_COLOR_WHITE
@@ -88,8 +106,7 @@ public:
     static void Line(
         const SDL_Point& p1,
         const SDL_Point& p2,
-        const SDL_Color& color,
-        const int thickness = -1
+        const SDL_Color& color
     );
 
     static string Input(
@@ -101,6 +118,10 @@ public:
     );
 
     static void DestroyInput(const string& uniqueId);
+
+    static void pushFontSize(const int& fontSize);
+    static void pushTextAlignY(const int& direction);
+    static void pushTextAlignX(const int& direction);
     
 };
 

@@ -9,10 +9,12 @@ int main(){
     int error;
 
     // Init the SDL System, if there is some error, exit
-    error = Sys::init("MySDL Window", false, (1920*0.75), (1080*0.75));
+    error = Sys::initWindow("MySDL Window", false, (1920*0.75), (1080*0.75));
     if(error != NO_ERROR) exit(EXIT_FAILURE);
     
-
+    error = Sys::initFont("./assets/fonts/font.ttf");
+    if(error != NO_ERROR) exit(EXIT_FAILURE);
+    
     // Init the PosgreSQL DB, check the status using CHECK_ERROR MACRO
     error = DB::init("projectdata", "postgres", "root");
     CHECK_ERROR(error);
@@ -55,7 +57,7 @@ int main(){
         int state = GUI::Button(
             "Click me!", 
             {20, 20, 100, 40}, 
-            SDL_COLOR_WHITE, 
+            SDL_COLOR_YELLOW, 
             {24, 24, 80, 255}
         );
 

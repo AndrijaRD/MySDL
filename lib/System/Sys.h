@@ -26,7 +26,7 @@ class Sys{
 
     static inline int maxFPS = 120;
     static inline int minFPS = 30;
-    static inline bool dynamicFPS = false;  // If this is true, the game will constantly change FPS as
+    // static inline bool dynamicFPS = false;  // If this is true, the game will constantly change FPS as
                                             // the game is unable to too well able to catch up
     static inline int FPS = 60;
     static inline uint frameCounter             = 0;
@@ -37,7 +37,6 @@ class Sys{
     static inline SDL_Window* win = nullptr;
     static inline SDL_Renderer* r = nullptr;
 
-    static inline string fontPath = "./assets/fonts/font.ttf";
     static inline TTF_Font* font;
 
     static inline int wWidth = 0;
@@ -48,12 +47,15 @@ class Sys{
     // static inline bool showWarnings = true;
 
     public:
-    static int init(
+    static int initWindow(
         const string& windowTitle = "MySDL Window",
         const bool& fullscreen = false,
         const int& windowWidth = 1920*0.75,             // 3/4 of the screen
         const int& windowHeight = 1080*0.75             // 3/4 of the screen
     );
+
+    static int initFont(const string& fontPath);
+
     static int handleEvents();
     static int presentFrame();
     static int cleanup();
@@ -63,7 +65,7 @@ class Sys{
 
     static int getFPS();
     static void setFPS(const int& newFPS);
-    static void setDynamicFPS(bool dynamicFPS = false, int maxFPS = 120, int minFPS = 30);
+    // static void setDynamicFPS(bool dynamicFPS = false, int maxFPS = 120, int minFPS = 30);
     static int getCurrentFrame();
 
     static string checkError(int error);

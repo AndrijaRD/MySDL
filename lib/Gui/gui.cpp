@@ -1,5 +1,5 @@
-#include "gui.h"
-#include "System/Sys.h"
+#include "./gui.h"
+#include "../System/Sys.h"
 
 
 

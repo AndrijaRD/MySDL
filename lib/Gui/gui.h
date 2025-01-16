@@ -2,8 +2,8 @@
 #ifndef MySDL_GUI
 #define MySDL_GUI
 
-#include "lib.h"
-#include "TextureManager/TM.h"
+#include "../lib.h"
+#include "../TextureManager/TM.h"
 
 #define NUM_OF_LOADED_TEXTURES 50
 

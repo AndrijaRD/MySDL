@@ -2,7 +2,7 @@
 #ifndef MySDL_TM
 #define MySDL_TM
 
-#include "lib.h"
+#include "../lib.h"
 
 
 // GENERAL STRUCT FOR IMAGES -----------------------------------------------------------------------

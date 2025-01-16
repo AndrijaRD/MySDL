@@ -2,7 +2,7 @@
 #ifndef MySDL_DB
 #define MySDL_DB
 
-#include "lib.h"
+#include "../lib.h"
 
 #define SQL_SELECT      0
 #define SQL_INSERT      1

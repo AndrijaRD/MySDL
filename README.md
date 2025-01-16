@@ -1,7 +1,37 @@
-MySDL Librarie
+# LUMOS
 
 A bunddle of System Manager, Texture Manager, Database Manager and custom GUI elements.
 Made easy and very fast to use.
+
+## HOW TO SETUP ##
+1. `make`
+2. `sudo make install`
+3. `sudo chmod +x ./install.sh`
+4. `sudo ./install.sh`
+
+## HOW TO USE ##
+1. `g++ main.cpp -o main -I/usr/include/Lumos -L/usr/local/lib -lLumos -lSDL2 -lSDL2_ttf -lSDL2_image -lpq`
+2. Makefile example:
+```
+
+# Use pkg-config to get the necessary flags
+CXXFLAGS = $(shell pkg-config --cflags Lumos)
+LDFLAGS = $(shell pkg-config --libs Lumos)
+
+# Compiler
+CXX = g++
+
+# Build the main executable
+main: main.cpp
+    $(CXX) $(CXXFLAGS) $(LDFLAGS) main.cpp -o main
+
+# Clean
+clean:
+    rm -f main
+
+```
+
+## ABOUT THE MODULES
 
 System Manager (Sys):  
     - Initiates the system  

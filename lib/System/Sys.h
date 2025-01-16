@@ -2,7 +2,7 @@
 #ifndef MySDL_SYSTEM
 #define MySDL_SYSTEM
 
-#include "lib.h"
+#include "../lib.h"
 
 
 // A macro for easyer checking of the errors, if there is something working print the error

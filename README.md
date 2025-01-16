@@ -9,11 +9,13 @@ Made easy and very fast to use.
 3. `sudo chmod +x ./install.sh`
 4. `sudo ./install.sh`
 
-## HOW TO USE ##
+## HOW TO INCLUDE ##
+In your main.cpp just add `#include <Lumos/Lumos.h>`
+
+## HOW TO COMPILE ##
 1. `g++ main.cpp -o main -I/usr/include/Lumos -L/usr/local/lib -lLumos -lSDL2 -lSDL2_ttf -lSDL2_image -lpq`
 2. Makefile example:
 ```
-
 # Use pkg-config to get the necessary flags
 CXXFLAGS = $(shell pkg-config --cflags Lumos)
 LDFLAGS = $(shell pkg-config --libs Lumos)
@@ -28,7 +30,6 @@ main: main.cpp
 # Clean
 clean:
     rm -f main
-
 ```
 
 ## ABOUT THE MODULES

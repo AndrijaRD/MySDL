@@ -1,47 +1,30 @@
-# Set the compiler and flags
+# Compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -fPIC -std=c++17  # -fPIC for position-independent code
+CXXFLAGS = -fPIC -Wall -Wextra -O2
 
-# Define the output shared library name
-LIB_NAME = libLumos.so
-LIB_DIR = /usr/local/lib
+# Directories
+SRC_DIR = lib
+BUILD_DIR = build
 
-# Define the source files
-SRC = \
-    lib/System/Sys.cpp \
-    lib/TextureManager/TM.cpp \
-    lib/PqDB/db.cpp \
-    lib/Gui/gui.cpp
+# Source files
+SRC_FILES = $(wildcard $(SRC_DIR)/*/*.cpp)
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
-# Define the object files
-OBJ = $(SRC:.cpp=.o)
+# Target library
+TARGET_LIB = libLumos.so
 
-# Define the installation directories
-INCLUDE_DIR = /usr/include/Lumos
+# Create build directories
+$(BUILD_DIR)/%/:
+	mkdir -p $@
 
-# Default rule to build the shared library
-all: $(LIB_NAME)
+# Build object files
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)/%/
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Build the shared library from object files
-$(LIB_NAME): $(OBJ)
-	$(CXX) -shared -o $(LIB_NAME) $(OBJ) -Wl,-soname,$(LIB_NAME)
+# Build shared library
+$(TARGET_LIB): $(OBJ_FILES)
+	$(CXX) -shared -o $@ $^
 
-# Rule to create object files from source files
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-# Install the shared library and headers
-install: $(LIB_NAME)
-	# Install the library to the system
-	mkdir -p $(LIB_DIR)
-	cp $(LIB_NAME) $(LIB_DIR)
-	# Install the header files
-	mkdir -p $(INCLUDE_DIR)
-	cp -r lib/* $(INCLUDE_DIR)/
-
-# Clean up build files
+# Clean build files
 clean:
-	rm -f $(OBJ) $(LIB_NAME)
-
-# Make install the default rule
-.PHONY: all install clean
+	rm -rf $(BUILD_DIR) $(TARGET_LIB)

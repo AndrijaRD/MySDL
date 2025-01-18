@@ -1,40 +1,57 @@
 #!/bin/bash
 
-INCLUDE_DIR="/usr/include/Lumos"
-LIB_DIR="/usr/local/lib"
+set -e  # Exit on any error
 
-SRC_INCLUDE_DIR="./lib"
-
+# Ensure the script is run as root
 if [ "$EUID" -ne 0 ]; then
     echo "Please run as root"
     exit 1
 fi
 
-echo "Installing dependencies..."
-pacman -S --noconfirm sdl2 sdl2_ttf sdl2_image postgresql
+# Define installation directories
+LIB_NAME="libLumos.so"
+LIB_DIR="/usr/local/lib"
+INCLUDE_DIR="/usr/local/include/Lumos"
+PKGCONFIG_DIR="/usr/lib/pkgconfig"
+PKGCONFIG_FILE="Lumos.pc"
 
-echo "Installing headers to $INCLUDE_DIR..."
-mkdir -p "$INCLUDE_DIR"
-cp -r $SRC_INCLUDE_DIR/* "$INCLUDE_DIR/"
+echo "Compiling the Lumos library..."
 
-echo "Installing compiled objects to $LIB_DIR..."
-mkdir -p "$LIB_DIR"
+# Compile the library
+make clean 2>/dev/null || true  # Clean previous builds if Makefile supports it
+make
 
-echo "Generating pkg-config file..."
-PKG_CONFIG_FILE="/usr/lib/pkgconfig/Lumos.pc"
-mkdir -p "$(dirname "$PKG_CONFIG_FILE")"
-cat <<EOL > "$PKG_CONFIG_FILE"
+echo "Installing the library..."
+
+# Create directories if they don't exist
+sudo mkdir -p "$LIB_DIR"
+sudo mkdir -p "$INCLUDE_DIR"
+sudo mkdir -p "$PKGCONFIG_DIR"
+
+# Copy the shared library
+cp -r "$LIB_NAME" "$LIB_DIR"
+
+# Copy header files
+cp -r lib/* "$INCLUDE_DIR"
+# cp -r lib/*/*.h "$INCLUDE_DIR"
+
+# Create Lumos.pc file
+echo "Creating $PKGCONFIG_FILE..."
+cat <<EOF | sudo tee "$PKGCONFIG_DIR/$PKGCONFIG_FILE" > /dev/null
 prefix=/usr/local
 exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include/Lumos
-libdir=\${prefix}/lib
 
 Name: Lumos
-Description: A wrapper library for SDL2
-Version: 1.0
+Description: A custom library for various utilities
+Version: 1.0.0
+Libs: -L\${libdir} -lLumos
 Cflags: -I\${includedir}
-Libs: -L\${libdir} -lLumos -lSDL2 -lSDL2_ttf -lSDL2_image -lpq
-EOL
+EOF
 
+# Update library cache
+echo "Updating linker cache..."
 ldconfig
-echo "Installation complete!"
+
+echo "Lumos library installed/updated successfully."

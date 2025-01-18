@@ -34,6 +34,7 @@ int DB::init(
 
 
 int DB::prepareStatement(Statement& s){
+    if(s.name == "" or s.command == "") return DB_EMPTY_STATEMENT_PARAM;
     PGresult* res = PQprepare(
         dbConn, 
         s.name.c_str(), 

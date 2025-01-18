@@ -292,6 +292,14 @@ void GUI::TextDynamic(const string& title, SDL_Rect& dRect, const SDL_Color& col
 
 
 
+void GUI::clearLoadedTexts(){
+    for(auto text : loadedTexts){
+        TM::freeTexture(text.second.td);
+    }
+    loadedTexts.clear();
+}
+
+
 
 
 /** Rect

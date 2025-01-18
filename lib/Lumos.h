@@ -2,10 +2,10 @@
 #ifndef Lumos
 #define Lumos
 
-#include "./System/Sys.h"
-#include "./TextureManager/TM.h"
-#include "./PqDB/db.h"
-#include "./Gui/gui.h"
-#include "./lib.h"
+#include "Lumos/System/Sys.h"
+#include "Lumos/TextureManager/TM.h"
+#include "Lumos/PqDB/db.h"
+#include "Lumos/Gui/gui.h"
+#include "Lumos/lib.h"
 
 #endif

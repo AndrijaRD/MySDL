@@ -26,8 +26,8 @@ struct Statement {
     bool prepared;
 
     Statement(
-        const string& name,
-        const string& command,
+        const string& name = "",
+        const string& command = "",
         const int commandType = SQL_SELECT,
         const int numOfParams = 0
     ):  name(name), 

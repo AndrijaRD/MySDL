@@ -96,6 +96,8 @@ public:
         SDL_Rect& dRect, 
         const SDL_Color& color = SDL_COLOR_WHITE
     );
+
+    static void clearLoadedTexts();
     
     static void Rect(
         const SDL_Rect& dRect,

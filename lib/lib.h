@@ -82,6 +82,7 @@ inline Uint32 toUint32(const SDL_Color& color) {
 #define DB_INVALID_RESULT               0x44
 #define DB_INVALID_ROW_COLUMN           0x45
 #define DB_INVALID_RES_VALUE            0x46
+#define DB_EMPTY_STATEMENT_PARAM        0x47
 //  DB RESERVED                         0x5f
 
 

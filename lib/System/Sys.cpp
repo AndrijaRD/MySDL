@@ -33,7 +33,8 @@ unordered_map<int, string> Sys::errorMap = {
     {DB_EXEC_NOT_PREPARED_ERROR,        "DB_EXEC_NOT_PREPARED_ERROR"},
     {DB_INVALID_RESULT,                 "DB_INVALID_RESULT"},
     {DB_INVALID_ROW_COLUMN,             "DB_INVALID_ROW_COLUMN"},
-    {DB_INVALID_RES_VALUE,              "DB_INVALID_RES_VALUE"}
+    {DB_INVALID_RES_VALUE,              "DB_INVALID_RES_VALUE"},
+    {DB_EMPTY_STATEMENT_PARAM,          "DB_EMPTY_STATEMENT_PARAM"}
 };
 
 

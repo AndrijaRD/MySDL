@@ -225,9 +225,13 @@ int TM::createTextTexture(
 
 /** COPY
  * 
- * Creates a new texture into the dst TextureData, it does it
- * by drawing the src texture on top of the dst texture and then
- * copies the rest of the src data into the dst object
+ * Creates a new Texture, copy, of the src, and places
+ * it into dst TextureData. This function frees the old
+ * dst Texture and creates a new one same as src.
+ * 
+ * If you just want to re-draw the src ontop of the dst
+ * without creating a whole new texture from the start
+ * you can use src.drawOverlayTexture() wich does exacly that.
  * 
  * @param src The source TextureData object, original
  * @param dst The destinaion object, the copy
@@ -314,6 +318,22 @@ int TextureData::drawOverlayTexture(const TextureData& td, SDL_Rect& dr){
     if(err != 0) return TM_SRT_FAILED;
 
     return NO_ERROR;
+}
+
+
+/** Draw Overlay Texture
+ * 
+ * Draws a texture on top of this texture.
+ * This drawOverlayTexture overload draws the 
+ * texture asuming that this->td and param td
+ * have at least the same aspect ratio and its
+ * drawing from top-left croner to bottom-right.
+ * 
+ * @param td TextureData object to be rendered on top
+ * @return 0 on success and positive on error coresponding to the ERROR DEFINITIONS
+ */
+int TextureData::drawOverlayTexture(const TextureData& td){
+    return drawOverlayTexture(td, (SDL_Rect){0, 0, this->width, this->height});
 }
 
 

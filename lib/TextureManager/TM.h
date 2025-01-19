@@ -83,6 +83,12 @@ class TM{
         const string& text,
         const SDL_Color& color
     );
+
+    static int resize(
+        TextureData& td,
+        int width,
+        int height = -1
+    );
 };
 
 #endif

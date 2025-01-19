@@ -96,7 +96,6 @@ void TM::freeTexture(TextureData& td){
 }
 
 // This should be avoided as it leaves dangling pointer and risks the use-after-free segmentation fault
-
 // void TM::freeTexture(SDL_Texture* tex){
 //     if(tex != nullptr){
 //         auto it = std::remove(loadedTextures.begin(), loadedTextures.end(), tex);
@@ -284,6 +283,51 @@ int TM::copy(const TextureData& src, TextureData& dst){
 
 
 
+int TM::resize(TextureData& td, int targetWidth, int targetHeight){
+    if(targetWidth == -1 && targetHeight == -1) return TM_INVALID_DRECT;
+
+    if(targetWidth == -1) targetWidth = static_cast<int>(td.width * (static_cast<float>(targetHeight) / td.height));
+    if(targetHeight == -1) targetHeight = static_cast<int>(td.height * (static_cast<float>(targetWidth) / td.width));
+
+    SDL_Texture* resizedTexture = SDL_CreateTexture(
+        Sys::renderer,
+        td.format, // Use a standard pixel format
+        SDL_TEXTUREACCESS_TARGET, // Texture will be used as a render target
+        targetWidth, 
+        targetHeight
+    );
+
+    if(!resizedTexture) return TM_TEXTURE_CREATE_ERROR;
+    
+    int err = SDL_SetRenderTarget(Sys::renderer, resizedTexture);
+    if(err != 0) return TM_SRT_FAILED;
+
+    SDL_Rect srcRect = { 0, 0, td.width, td.height };
+    SDL_Rect dstRect = { 0, 0, targetWidth, targetHeight };
+    err = SDL_RenderCopy(Sys::renderer, td.tex, &srcRect, &dstRect);
+    if(err != 0) return TM_RCPY_FAILED;
+
+
+    err = SDL_SetRenderTarget(Sys::renderer, nullptr);
+    if(err != 0) return TM_SRT_FAILED;
+
+    if(SDL_SetTextureBlendMode(resizedTexture, SDL_BLENDMODE_BLEND)){
+        SDL_DestroyTexture(resizedTexture);
+        return TM_TEXTURE_SET_BLENDMODE_ERROR;
+    }
+
+    SDL_DestroyTexture(td.tex);
+
+    td.tex = resizedTexture;
+    td.width = targetWidth;
+    td.height = targetHeight;
+
+    return NO_ERROR;
+}
+
+
+
+
 /** Draw Overlay Texture
  * 
  * Draws a texture on top of this texture.
@@ -319,6 +363,9 @@ int TextureData::drawOverlayTexture(const TextureData& td, SDL_Rect& dr){
 
     return NO_ERROR;
 }
+
+
+
 
 
 /** Draw Overlay Texture
@@ -436,6 +483,9 @@ int TextureData::drawOverlayLine(const SDL_Point& p1, const SDL_Point& p2, const
 }
 
 
+
+
+
 int TextureData::drawOverlayText(const string& text, SDL_Rect& dRect, const SDL_Color& color){
     int err;
 
@@ -449,3 +499,7 @@ int TextureData::drawOverlayText(const string& text, SDL_Rect& dRect, const SDL_
 
     return NO_ERROR;
 }
+
+
+
+

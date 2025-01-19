@@ -333,7 +333,8 @@ int TextureData::drawOverlayTexture(const TextureData& td, SDL_Rect& dr){
  * @return 0 on success and positive on error coresponding to the ERROR DEFINITIONS
  */
 int TextureData::drawOverlayTexture(const TextureData& td){
-    return drawOverlayTexture(td, (SDL_Rect){0, 0, this->width, this->height});
+    SDL_Rect dRect = {0, 0, this->width, this->height};
+    return drawOverlayTexture(td, dRect);
 }
 
 

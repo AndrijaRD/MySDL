@@ -11,6 +11,8 @@ struct TextureData{
     Uint32 format;
     int width;
     int height;
+    int orgWidth;
+    int orgHeight;
 
     TextureData(
         SDL_Texture* t = nullptr,

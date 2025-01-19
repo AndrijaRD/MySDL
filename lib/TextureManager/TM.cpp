@@ -68,6 +68,8 @@ int TM::loadTexture(
 
     // GET TEXTURE DIMENSIONS -------------------------------------------------------------
     SDL_QueryTexture(td.tex, &td.format, NULL, &td.width, &td.height);
+    td.orgWidth = td.width;
+    td.orgHeight = td.height;
     
     return NO_ERROR;
 }
@@ -93,6 +95,8 @@ void TM::freeTexture(TextureData& td){
     td.width = 0;
     td.height = 0;
     td.format = 0;
+    td.orgWidth = 0;
+    td.orgHeight = 0;
 }
 
 // This should be avoided as it leaves dangling pointer and risks the use-after-free segmentation fault
@@ -211,6 +215,8 @@ int TM::createTextTexture(
 
     // GET TEXTURE DIMENSIONS -------------------------------------------------------------
     SDL_QueryTexture(td.tex, &td.format, NULL, &td.width, &td.height);
+    td.orgWidth = td.width;
+    td.orgHeight = td.height;
 
     SDL_FreeSurface(surface);
     loadedTextures.push_back(td.tex);
@@ -273,6 +279,8 @@ int TM::copy(const TextureData& src, TextureData& dst){
     dst.width = src.width;
     dst.height = src.height;
     dst.format = src.format;
+    dst.orgWidth = src.orgWidth;
+    dst.orgHeight = src.orgHeight;
 
     loadedTextures.push_back(dst.tex);
 

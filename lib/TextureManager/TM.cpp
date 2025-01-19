@@ -1,6 +1,6 @@
 #include "./TM.h"
 #include "../System/Sys.h"
-
+#include "../Gui/gui.h"
 
 
 
@@ -436,3 +436,16 @@ int TextureData::drawOverlayLine(const SDL_Point& p1, const SDL_Point& p2, const
 }
 
 
+int TextureData::drawOverlayText(const string& text, SDL_Rect& dRect, const SDL_Color& color){
+    int err;
+
+    err = SDL_SetRenderTarget(Sys::renderer, this->tex);
+    if(err != 0) return TM_SRT_FAILED;
+
+    GUI::Text(text, dRect, color);
+
+    err = SDL_SetRenderTarget(Sys::renderer, nullptr);
+    if(err != 0) return TM_SRT_FAILED;
+
+    return NO_ERROR;
+}

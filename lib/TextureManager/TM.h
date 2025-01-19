@@ -39,6 +39,12 @@ struct TextureData{
         const SDL_Color& color,
         const int& thickness
     );
+
+    int drawOverlayText(
+        const string& text,
+        SDL_Rect& dRect,
+        const SDL_Color& color
+    );
 };
 
 

@@ -94,6 +94,9 @@ typedef struct {
     uint day;
 } dateT;
 
+/**
+ * Handles << operator overload for dateT type.
+ */
 inline std::ostream& operator<<(std::ostream& os, const dateT& date){
     std::ostringstream oss;
     oss << std::setw(4) << std::setfill('0') << date.year << "-"
@@ -103,10 +106,26 @@ inline std::ostream& operator<<(std::ostream& os, const dateT& date){
     return os;
 }
 
+/** String to dateT
+ * 
+ * Takes "yyyy-mm-dd" format and returns dateT.
+ */
 inline dateT string2date(const string& dateStr){
     dateT date;
     sscanf(dateStr.c_str(), "%4u-%2u-%2u", &date.year, &date.month, &date.day);
     return date;
+}
+
+/** dateT to string
+ * 
+ * Takes dateT and returns string in "yyyy-mm-dd" format.
+ */
+inline string date2string(const dateT& date){
+    std::ostringstream oss;
+    oss << std::setw(4) << std::setfill('0') << date.year << "-"
+        << std::setw(2) << std::setfill('0') << date.month << "-"
+        << std::setw(2) << std::setfill('0') << date.day;
+    return oss.str();
 }
 
 // TIME ------------------------------------------------------------------------
@@ -116,6 +135,9 @@ typedef struct {
     uint second;
 } timeT;
 
+/**
+ * Handles << operator overload for timeT type.
+ */
 inline std::ostream& operator<<(std::ostream& os, const timeT time){
     std::ostringstream oss;
     oss << std::setw(2) << std::setfill('0') << time.hour << ":"
@@ -125,10 +147,26 @@ inline std::ostream& operator<<(std::ostream& os, const timeT time){
     return os;
 }
 
+/** String to timeT
+ * 
+ * Takes "hh:mm:ss" format and returns timeT.
+ */
 inline timeT string2time(const string& timeStr){
     timeT time;
     sscanf(timeStr.c_str(), "%2u:%2u:%2u", &time.hour, &time.minute, &time.second);
     return time;
+}
+
+/** timeT to string
+ * 
+ * Takes timeT and returns string in "hh:mm:ss" format.
+ */
+inline string time2string(const timeT& time){
+    std::ostringstream oss;
+    oss << std::setw(2) << std::setfill('0') << time.hour << ":"
+        << std::setw(2) << std::setfill('0') << time.minute << ":"
+        << std::setw(2) << std::setfill('0') << time.second;
+    return oss.str();
 }
 
 

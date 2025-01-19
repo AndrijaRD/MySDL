@@ -24,6 +24,7 @@ int DB::init(
     dbConn = PQconnectdb(connInfo.c_str());
     if (PQstatus(dbConn) != CONNECTION_OK) {
         PQfinish(dbConn);
+	cout << "connInfo: " << connInfo << endl;
         return DB_CONNECTION_ERROR;
     }
 

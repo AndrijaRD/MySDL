@@ -639,6 +639,7 @@ void GUI::DestroyInput(const string& uniqueId){
     }
 
     TM::freeTexture(state->td);
+    if(state->focused) Sys::Keyboard::unfocus();
     inputStates.erase(it);
     return;
 }

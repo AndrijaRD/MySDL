@@ -12,19 +12,19 @@
  * Used for removing the oldest text texture of loadedTexts map.
  */
 void GUI::removeOldest(){
-    // Here will be stored the oldest objest
-    LoadedText* oldest = nullptr;
-    
-    // Iterate trough entier map and memorize the item with lowst frame value
-    for(auto& lt : loadedTexts){
-        if(oldest == nullptr || *oldest > lt.second){
-            oldest = &(lt.second);
+    // Iterator to the oldest object
+    auto oldestIt = loadedTexts.begin();
+
+    // Iterate through the map and find the oldest element
+    for (auto it = loadedTexts.begin(); it != loadedTexts.end(); ++it) {
+        if (oldestIt == loadedTexts.begin() || oldestIt->second > it->second) {
+            oldestIt = it;
         }
     }
 
     // Free the texture and erase the item from the map
-    TM::freeTexture(oldest->td);
-    loadedTexts.erase(oldest->title);
+    TM::freeTexture(oldestIt->second.td);
+    loadedTexts.erase(oldestIt);
 }
 
 
@@ -52,7 +52,7 @@ string color2hex(const SDL_Color& color){
  */
 GUI::LoadedText* GUI::loadNewText(const string& title, const SDL_Color& color){
     // If there is more loaded Textures then allowed, remove the oldest
-    if(loadedTexts.size() >= NUM_OF_LOADED_TEXTURES){
+    if(loadedTexts.size() >= max_num_of_loaded_textures){
         removeOldest();
     }
 
@@ -299,6 +299,8 @@ void GUI::clearLoadedTexts(){
     loadedTexts.clear();
 }
 
+void GUI::setMaxNumOfLoadedTextures(const int& num){ max_num_of_loaded_textures = num; }
+
 
 
 
@@ -401,6 +403,10 @@ string GUI::Input(
     bool autoFocus = GUI::pAutoFocus;
     GUI::pAutoFocus = false;
 
+    bool inputLock = GUI::pInputLock;
+    GUI::pInputLock = false;
+
+
 
 
     // FIND STATE --------------------------------------------------------
@@ -413,6 +419,12 @@ string GUI::Input(
         // If the state doesnt exist, create it
         inputStates.insert({uniqueId, InputState(uniqueId)});
         state = &inputStates.at(uniqueId);
+    }
+
+    if(inputLock){
+        autoFocus = false;
+        if(state->focused) Sys::Keyboard::unfocus();
+        state->focused = false;
     }
 
 
@@ -471,6 +483,8 @@ string GUI::Input(
 
     // Render the text
     TM::renderTexture(state->td, textRect);
+
+    if(inputLock) GUI::Rect(dRect, {120, 120, 120, 120});
 
     // Check if placeholder was rendered
     bool placeholderActive = false;
@@ -546,6 +560,9 @@ string GUI::Input(
         Sys::Keyboard::unfocus();
         state->focused = false;
     }
+
+    // If Sys::Keyboard::unfocus() was runned but the input still wants the focus
+    if(state->focused && !Sys::Keyboard::isFocused()) Sys::Keyboard::focus(); 
 
     // A small lambda funtion for handling deletion
     auto deleteLastChar = [&]() {
@@ -639,7 +656,9 @@ void GUI::DestroyInput(const string& uniqueId){
     }
 
     TM::freeTexture(state->td);
-    if(state->focused) Sys::Keyboard::unfocus();
+    Sys::Keyboard::unfocus();
+    state->focused = false;
+    state->value.clear();
     inputStates.erase(it);
     return;
 }
@@ -651,4 +670,4 @@ void GUI::pushFontSize(const int& fontSize) { pFontSize = fontSize; }
 void GUI::pushTextAlignX(const int& value)  { pTextAlignX = value;  }
 void GUI::pushTextAlignY(const int& value)  { pTextAlignY = value;  }
 void GUI::pushAutoFocus()                   { pAutoFocus = true;    }
-
+void GUI::pushInputLock()                   { pInputLock = true; }

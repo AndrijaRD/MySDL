@@ -113,7 +113,7 @@ class DB{
     );
 
     static int prepareStatement(Statement& statement);
-    static int execPrepared(Statement& statement, const char* params, DBResult& result);
+    static int execPrepared(Statement& statement, const vector<string>& params, DBResult& result);
 
     private:
     static bool checkResult(const PGresult* s, const int type);

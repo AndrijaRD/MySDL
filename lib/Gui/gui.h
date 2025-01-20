@@ -5,8 +5,6 @@
 #include "../lib.h"
 #include "../TextureManager/TM.h"
 
-#define NUM_OF_LOADED_TEXTURES 50
-
 #define GUI_CURSOR_OUTSIDE     0
 #define GUI_CURSOR_CLICKED     1
 #define GUI_CURSOR_HOVERING    2
@@ -24,6 +22,7 @@ string color2hex(const SDL_Color& color);
 
 class GUI{
 private:
+    static inline int max_num_of_loaded_textures = 50;
 
     struct LoadedText {
         int frame;
@@ -77,6 +76,7 @@ private:
     static inline int pTextAlignY = -1;
     static inline int pTextAlignX = -1; 
     static inline bool pAutoFocus = false;
+    static inline bool pInputLock = false;
 
 public:
     static int Button(
@@ -99,6 +99,7 @@ public:
     );
 
     static void clearLoadedTexts();
+    static void setMaxNumOfLoadedTextures(const int& num);
     
     static void Rect(
         const SDL_Rect& dRect,
@@ -126,7 +127,7 @@ public:
     static void pushTextAlignY(const int& direction);
     static void pushTextAlignX(const int& direction);
     static void pushAutoFocus();
-    
+    static void pushInputLock();
 };
 
 #endif

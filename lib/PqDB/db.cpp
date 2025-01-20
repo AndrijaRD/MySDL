@@ -98,14 +98,20 @@ bool DB::checkResult(const PGresult* res, const int type){
 
 
 
-int DB::execPrepared(Statement& s, const char* params, DBResult& result){
+int DB::execPrepared(Statement& s, const vector<string>& params, DBResult& result){
     if(!s.prepared) return DB_EXEC_NOT_PREPARED_ERROR;
+
+    const char* formatedParams[s.nParams];
+
+    for(int i=0; i < (int)params.size(); i++){
+        formatedParams[i] = params.at(i).c_str();
+    }
 
     result.result = PQexecPrepared(
         dbConn, 
         s.name.c_str(), 
         s.nParams, 
-        &params, 
+        formatedParams, 
         nullptr, 
         nullptr, 
         0

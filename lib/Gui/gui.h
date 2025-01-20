@@ -76,6 +76,7 @@ private:
     static inline int pFontSize = -1;
     static inline int pTextAlignY = -1;
     static inline int pTextAlignX = -1; 
+    static inline bool pAutoFocus = false;
 
 public:
     static int Button(
@@ -124,6 +125,7 @@ public:
     static void pushFontSize(const int& fontSize);
     static void pushTextAlignY(const int& direction);
     static void pushTextAlignX(const int& direction);
+    static void pushAutoFocus();
     
 };
 

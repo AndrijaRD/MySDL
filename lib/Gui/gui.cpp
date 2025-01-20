@@ -398,6 +398,9 @@ string GUI::Input(
     if(textAlignY == -1) textAlignY = GUI_ALIGN_CENTER; // Default
     GUI::pTextAlignY = -1;
 
+    bool autoFocus = GUI::pAutoFocus;
+    GUI::pAutoFocus = false;
+
 
 
     // FIND STATE --------------------------------------------------------
@@ -412,6 +415,11 @@ string GUI::Input(
         state = &inputStates.at(uniqueId);
     }
 
+
+    if(autoFocus){
+        Sys::Keyboard::focus();
+        state->focused = true;
+    }
 
 
     // DRAW BACKGROUND ---------------------------------------------------
@@ -641,3 +649,5 @@ void GUI::DestroyInput(const string& uniqueId){
 void GUI::pushFontSize(const int& fontSize) { pFontSize = fontSize; }
 void GUI::pushTextAlignX(const int& value)  { pTextAlignX = value;  }
 void GUI::pushTextAlignY(const int& value)  { pTextAlignY = value;  }
+void GUI::pushAutoFocus()                   { pAutoFocus = true;    }
+
